@@ -9,7 +9,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 MAIN_MENU, GET_PHOTOS, GET_DESCRIPTION, GET_CONTACT = range(4)
 
 # Идентификатор вашего канала для уведомлений
-channel_id = '@ks_apartments'  # Замените на ваш идентификатор канала
+channel_id = '-4591476475'  # Замените на ваш идентификатор канала
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     reply_keyboard = [['📸 Опубликовать', '🤝 Сотрудничество']]
