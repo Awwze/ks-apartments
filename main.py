@@ -3,16 +3,13 @@ from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardR
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler
 
 # Настройка логирования
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelлевел)s - %(message)s', level=logging.INFO)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 # Определение состояний для ConversationHandler
 MAIN_MENU, GET_PHOTOS, GET_DESCRIPTION, GET_CONTACT = range(4)
 
 # Идентификатор вашего канала для уведомлений
 channel_id = '@ks_apartments'  # Замените на ваш идентификатор канала
-
-# Данные пользователя
-user_data = {}
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     reply_keyboard = [['📸 Опубликовать', '🤝 Сотрудничество']]
@@ -28,15 +25,15 @@ async def publish(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         'Пожалуйста, отправьте минимум 3 фото вашего дома или квартиры.',
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True, resize_keyboard=True)
     )
-    user_data['photos'] = []
+    context.user_data['photos'] = []
     return GET_PHOTOS
 
 async def get_photos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if update.message.text == 'Назад':
         return await start(update, context)
     if update.message.photo:
-        user_data['photos'].append(update.message.photo[-1].file_id)
-        if len(user_data['photos']) >= 3:
+        context.user_data['photos'].append(update.message.photo[-1].file_id)
+        if len(context.user_data['photos']) >= 3:
             await update.message.reply_text('Теперь отправьте описание вашего дома или квартиры.')
             return GET_DESCRIPTION
         else:
@@ -49,7 +46,7 @@ async def get_photos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 async def get_description(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if update.message.text == 'Назад':
         return await start(update, context)
-    user_data['description'] = update.message.text
+    context.user_data['description'] = update.message.text
     reply_keyboard = [[KeyboardButton("Отправить номер телефона", request_contact=True)], ['Назад']]
     await update.message.reply_text(
         'Пожалуйста, отправьте ваш номер телефона, используя кнопку ниже.',
@@ -61,23 +58,23 @@ async def get_contact(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
     if update.message.text == 'Назад':
         return await start(update, context)
     if update.message.contact:
-        user_data['phone_number'] = update.message.contact.phone_number
-        user_data['username'] = update.message.from_user.username
+        context.user_data['phone_number'] = update.message.contact.phone_number
+        context.user_data['username'] = update.message.from_user.username
         await update.message.reply_text('Спасибо! Ваше объявление отправлено на модерацию.', reply_markup=ReplyKeyboardRemove())
 
         media_group = []
-        for i, photo in enumerate(user_data['photos']):
+        for i, photo in enumerate(context.user_data['photos']):
             caption = (
-                f"{user_data['description']}\n"
-                f"Номер телефона: {user_data['phone_number']}\n"
-                f"Юзернейм: @{user_data['username']}\n"
+                f"{context.user_data['description']}\n"
+                f"Номер телефона: {context.user_data['phone_number']}\n"
+                f"Юзернейм: @{context.user_data['username']}\n"
                 f"❗️Сервис не несет ответственность за Ваши сделки❗️"
             )
             media_group.append(InputMediaPhoto(photo, caption=caption if i == 0 else ""))
-        
+
         await context.bot.send_media_group(chat_id=channel_id, media=media_group)
 
-        user_data.clear()
+        context.user_data.clear()
         return await start(update, context)  # Возвращаем пользователя в главное меню после публикации
     else:
         await update.message.reply_text('Пожалуйста, используйте кнопку ниже для отправки номера телефона.')
@@ -92,7 +89,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return ConversationHandler.END
 
 def main() -> None:
-    application = Application.builder().token("7240256331:AAG6XeFQpTvLje_rqTc6s6t68JggdNJvcjk").build()
+    application = Application.builder().token("7112513940:AAGd6zzA4-NO9MjY8VrWo8ZC7_mkV_fx8i4").build()
 
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start)],
